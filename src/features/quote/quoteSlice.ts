@@ -1,16 +1,21 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 //import fetchAPIData from "../../utils/fetchAPIData";
 import type { PayloadAction } from "@reduxjs/toolkit";
-import type { Quote } from "../../types/quote.types";
+import type { Quote, QuoteInitialState } from "../../types/quote.types";
+import type { RootState } from "../../store";
 
-const API_URL = "http://api.forismatic.com/api/1.0/?method=getQuote&format=json&lang=en";
+const API_URL = "https://dummyjson.com/quotes/random";
 
-const quoteInitialState: Quote = {
-    text: "",
-    author: ""
+const quoteInitialState: QuoteInitialState = {
+    quote: {
+        text: "",
+        author: ""
+    },
+    isLoadingQuote: false,
+    failedToLoadQuote: false
 }
 
-export const getQuote = createAsyncThunk<Quote, void>(
+export const getQuote = createAsyncThunk<Quote, void, { rejectValue: string }>(
     "quote/getQuote",
     async (_, { rejectWithValue }) => {
         try {
@@ -20,14 +25,16 @@ export const getQuote = createAsyncThunk<Quote, void>(
             }
 
             const json = await response.json()
-            if (!json.quoteText) {
+            if (!json.quote) {
                 return rejectWithValue("Error: no quote text returned.");
             }
 
             const quote: Quote = {
-                text: json.quoteText,
-                author: json.quoteAuthor
+                text: json.quote,
+                author: json.author
             };
+
+            //console.log("Quote:", quote);
 
             return quote;
         } catch (error: any) {
@@ -47,8 +54,24 @@ export const quoteSlice = createSlice({
     extraReducers: (builder) => {
         builder
             .addCase(getQuote.fulfilled, (state, action: PayloadAction<Quote>) => {
-                state.text = action.payload.text;
-                state.author = action.payload.author || "Anonymous";
+                state.quote.text = action.payload.text;
+                state.quote.author = action.payload.author || "Anonymous";
+                state.isLoadingQuote = false;
+                state.failedToLoadQuote = false;
+            })
+            .addCase(getQuote.pending, (state) => {
+                state.quote.text = "";
+                state.quote.author = "";
+                state.isLoadingQuote = true;
+                state.failedToLoadQuote = false;
             })
     }
 });
+
+export const { resetQuote } = quoteSlice.actions;
+export const selectQuote = (state: RootState) => state.quote.quote;
+//export const selectQuoteAuthor = (state: RootState) => state.quote.quote.author;
+export const selectisQuoteLoading = (state: RootState) => state.quote.isLoadingQuote;
+export const selectFailedToLoadQuote = (state: RootState) => state.quote.failedToLoadQuote;
+
+export default quoteSlice.reducer;
