@@ -6,7 +6,8 @@ const API_URL = `https://api.unsplash.com/search/photos?query=nature&page=1&per_
 
 const initialBackgroundImageState: BackgroundImageInitialState = {
     images: [],
-    status: "idle"
+    status: "idle",
+    error: null
 };
 
 export const getBackgroundImages = createAsyncThunk<BackgroundImage[], void, { rejectValue: string }>(
@@ -52,10 +53,17 @@ export const backgroundImageSlice = createSlice({
             .addCase(getBackgroundImages.fulfilled, (state, action: PayloadAction<BackgroundImage[]>) => {
                 state.images = action.payload;
                 state.status = "succeeded";
+                state.error = null;
             })
             .addCase(getBackgroundImages.pending, (state) => {
                 state.images = [];
                 state.status = "loading";
+                state.error = null
+            })
+            .addCase(getBackgroundImages.rejected, (state, action) => {
+                state.images = [];
+                state.status = "failed";
+                state.error = action.payload as string || action.error.message || "Unknown error.";
             })
     }
 });

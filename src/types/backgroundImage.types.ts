@@ -5,5 +5,6 @@ export interface BackgroundImage {
 
 export interface BackgroundImageInitialState {
     images: BackgroundImage[],
-    status: "idle" | "loading" | "succeeded" | "failed"
+    status: "idle" | "loading" | "succeeded" | "failed",
+    error: string | null
 };

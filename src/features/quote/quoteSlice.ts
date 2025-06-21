@@ -11,8 +11,8 @@ const quoteInitialState: QuoteInitialState = {
         text: "",
         author: ""
     },
-    isLoadingQuote: false,
-    failedToLoadQuote: false
+    status: "idle",
+    error: null
 }
 
 export const getQuote = createAsyncThunk<Quote, void, { rejectValue: string }>(
@@ -56,22 +56,27 @@ export const quoteSlice = createSlice({
             .addCase(getQuote.fulfilled, (state, action: PayloadAction<Quote>) => {
                 state.quote.text = action.payload.text;
                 state.quote.author = action.payload.author || "Anonymous";
-                state.isLoadingQuote = false;
-                state.failedToLoadQuote = false;
+                state.status = "succeeded";
+                state.error = null;
             })
             .addCase(getQuote.pending, (state) => {
                 state.quote.text = "";
                 state.quote.author = "";
-                state.isLoadingQuote = true;
-                state.failedToLoadQuote = false;
+                state.status = "loading";
+                state.error = null;
+            })
+            .addCase(getQuote.rejected, (state, action) => {
+                state.quote.text = "";
+                state.quote.author = "";
+                state.status = "failed";
+                state.error = action.payload as string || action.error.message || "Unknown error.";
             })
     }
 });
 
 export const { resetQuote } = quoteSlice.actions;
 export const selectQuote = (state: RootState) => state.quote.quote;
-//export const selectQuoteAuthor = (state: RootState) => state.quote.quote.author;
-export const selectisQuoteLoading = (state: RootState) => state.quote.isLoadingQuote;
-export const selectFailedToLoadQuote = (state: RootState) => state.quote.failedToLoadQuote;
+export const selectisQuoteLoading = (state: RootState) => state.quote.status;
+export const selectFailedToLoadQuote = (state: RootState) => state.quote.error;
 
 export default quoteSlice.reducer;

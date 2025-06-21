@@ -5,6 +5,6 @@ export interface Quote {
 
 export interface QuoteInitialState {
     quote: Quote,
-    isLoadingQuote: boolean,
-    failedToLoadQuote: boolean
+    status: "idle" | "loading" | "succeeded" | "failed",
+    error: string | null
 };
