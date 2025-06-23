@@ -6,6 +6,7 @@ const API_URL = `https://api.unsplash.com/search/photos?query=nature&page=1&per_
 
 const initialBackgroundImageState: BackgroundImageInitialState = {
     images: [],
+    currentImageIndex: 0,
     status: "idle",
     error: null
 };
@@ -46,30 +47,40 @@ export const backgroundImageSlice = createSlice({
     reducers: {
         resetBackgroundImages: () => {
             return initialBackgroundImageState;
+        },
+        nextImage: (state) => {
+            state.currentImageIndex = state.currentImageIndex === (state.images.length - 1) ? 0 : state.currentImageIndex + 1;
+        },
+        previousImage: (state) => {
+            state.currentImageIndex = state.currentImageIndex === 0 ? state.images.length - 1 : state.currentImageIndex - 1;
         }
     },
     extraReducers: (builder) => {
         builder
             .addCase(getBackgroundImages.fulfilled, (state, action: PayloadAction<BackgroundImage[]>) => {
                 state.images = action.payload;
+                state.currentImageIndex = 0;
                 state.status = "succeeded";
                 state.error = null;
             })
             .addCase(getBackgroundImages.pending, (state) => {
                 state.images = [];
+                state.currentImageIndex = 0;
                 state.status = "loading";
                 state.error = null
             })
             .addCase(getBackgroundImages.rejected, (state, action) => {
                 state.images = [];
+                state.currentImageIndex = 0;
                 state.status = "failed";
                 state.error = action.payload as string || action.error.message || "Unknown error.";
             })
     }
 });
 
-export const { resetBackgroundImages } = backgroundImageSlice.actions;
+export const { resetBackgroundImages, nextImage, previousImage } = backgroundImageSlice.actions;
 export const selectImages = (state: RootState) => state.backgroundImage.images;
+export const selectCurrentImageIndex = (state: RootState) => state.backgroundImage.currentImageIndex;
 export const selectBackgroundImagesStatus = (state: RootState) => state.backgroundImage.status;
 
 export default backgroundImageSlice.reducer;

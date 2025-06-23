@@ -76,7 +76,7 @@ export const quoteSlice = createSlice({
 
 export const { resetQuote } = quoteSlice.actions;
 export const selectQuote = (state: RootState) => state.quote.quote;
-export const selectisQuoteLoading = (state: RootState) => state.quote.status;
-export const selectFailedToLoadQuote = (state: RootState) => state.quote.error;
+export const selectQuoteStatus = (state: RootState) => state.quote.status;
+export const selectQuoteError = (state: RootState) => state.quote.error;
 
 export default quoteSlice.reducer;
